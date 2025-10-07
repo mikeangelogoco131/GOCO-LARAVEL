@@ -1,0 +1,3 @@
+.students .header { display:flex; justify-content: space-between; align-items: center; }
+.students .filters { display:flex; gap: 10px; margin: 10px 0; }
+.students .table-wrapper { background:#fff; border:1px solid $border; border-radius:$radius; overflow:hidden; }

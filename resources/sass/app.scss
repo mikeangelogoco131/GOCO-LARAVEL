@@ -1,0 +1,146 @@
+// Main SASS entry
+@import 'variables';
+
+// Base resets and helpers
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: $bg;
+  color: $text;
+  margin: 0;
+}
+
+// Layout shell
+.app-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  grid-template-rows: 60px 1fr;
+  grid-template-areas:
+    'sidebar header'
+    'sidebar main';
+  min-height: 100vh;
+}
+.app-header { grid-area: header; background: linear-gradient(90deg, $primary-600, $accent); color: #fff; border-bottom: 0; display: flex; align-items: center; padding: 0 16px; }
+.app-header .input { background: rgba(255,255,255,.15); color: #fff; border-color: transparent; }
+.app-header .btn-outline { color: #fff; border-color: rgba(255,255,255,.4); }
+.app-sidebar { grid-area: sidebar; background: linear-gradient(180deg, #fff, $surface); border-right: 1px solid $border; padding: 16px; position: sticky; top: 0; height: 100vh; }
+.app-main { grid-area: main; padding: 20px; }
+
+// Reusable components
+.card { background: #fff; border: 1px solid $border; border-radius: 10px; box-shadow: $shadow; padding: 16px; }
+.card + .card { margin-top: 16px; }
+
+// Simple modal
+.modal { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+.modal[hidden] { display: none; }
+.modal-card { background: #fff; border: 1px solid $border; border-radius: 12px; box-shadow: $shadow; padding: 16px; width: 100%; max-width: 560px; }
+.modal-card h2 { margin: 0 0 12px; }
+.modal-card .input { width: 100%; }
+
+// Tables
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { text-align: left; padding: 10px 12px; border-bottom: 1px solid $border; }
+.table thead th { background: linear-gradient(90deg, rgba($primary, .08), rgba($accent, .08)); color: $muted2; font-weight: 700; }
+.toolbar { padding: 8px 8px 12px; }
+
+// Dashboard hero banner
+.dashboard-hero {
+  background: linear-gradient(90deg, $primary-600, $accent);
+  color: #fff;
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 18px;
+  box-shadow: 0 10px 30px rgba(17, 24, 39, .08);
+}
+.dashboard-hero .hero-title { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+.dashboard-hero .hero-sub { font-size: 16px; font-weight: 600; opacity: 0.95; margin-bottom: 12px; }
+.dashboard-hero .hero-pill {
+  background: linear-gradient(90deg, rgba(255,255,255,.2), rgba(255,255,255,.12));
+  color: rgba(255,255,255,.95);
+  padding: 10px 14px;
+  border-radius: 12px;
+  display: inline-block;
+  font-size: 14px;
+}
+
+// Dashboard stats grid
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.stat-card {
+  display: block;
+  background: linear-gradient(135deg, #ffffff, #f7fafc);
+  border: 1px solid $border;
+  border-radius: 14px;
+  box-shadow: 0 6px 20px rgba(17, 24, 39, .05);
+  padding: 16px;
+  color: inherit;
+  text-decoration: none;
+  transition: transform .12s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 10px 26px rgba(17,24,39,.08); border-color: rgba($primary, .25); }
+.stat-card .stat-label { color: $muted; font-weight: 600; margin-bottom: 6px; }
+.stat-card .stat-value { font-size: 28px; font-weight: 800; color: $text; }
+.stat-card .stat-sub { font-size: 13px; color: $success; opacity: .9; }
+.stat-card .highlight { background: linear-gradient(90deg, #f59e0b1a, #fbbf241a); padding: 4px 8px; border-radius: 8px; color: #f59e0b; display: inline-block; }
+.stat-card.wide { grid-column: span 2; }
+
+@media (max-width: 1000px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .stat-card.wide { grid-column: span 2; }
+}
+@media (max-width: 640px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
+.stat {
+  display: grid; grid-template-columns: auto 1fr; grid-gap: 12px; align-items: center;
+  .stat-icon { width: 40px; height: 40px; border-radius: 8px; display: grid; place-items: center; background: $primary10; color: $primary; }
+  .stat-value { font-size: 24px; font-weight: 700; }
+  .stat-label { color: $muted; }
+}
+
+.table {
+  width: 100%; border-collapse: collapse; background: #fff; border: 1px solid $border; border-radius: 10px; overflow: hidden;
+  th, td { padding: 12px 14px; border-bottom: 1px solid $border; }
+  th { text-align: left; background: linear-gradient(180deg, $primary10, transparent); color: $muted2; font-weight: 600; font-size: 14px; }
+  tr:hover td { background: #fafafa; }
+}
+
+.btn { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; font-weight: 600;
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease, filter .18s ease, box-shadow .18s ease, transform .06s ease;
+}
+.btn:hover:not(:disabled) {
+  background-color: rgba($primary, .08);
+}
+.btn:active:not(:disabled) { transform: translateY(1px); }
+
+.btn-primary { background: linear-gradient(90deg, $primary, $accent); color: #fff; box-shadow: 0 6px 14px rgba(59,130,246,.25); border: none; }
+.btn-primary:hover:not(:disabled) { background: linear-gradient(90deg, $primary-600, $accent-600); box-shadow: 0 8px 18px rgba(37,99,235,.28); }
+
+.btn-outline { background: #fff; border-color: $border; color: $text; }
+.btn-outline:hover:not(:disabled) { background: rgba($primary, .08); border-color: $primary-600; color: $primary-600; }
+
+.btn-danger { background: $danger; color: #fff; }
+.btn-danger:hover:not(:disabled) { background: $danger-600; box-shadow: 0 6px 14px rgba(239,68,68,.25); }
+.btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.input, .select { height: 36px; padding: 0 10px; border: 1px solid $border; border-radius: 8px; background: #fff; }
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+.grid { display: grid; gap: 16px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+// Page imports
+@import 'Sidebar';
+@import 'Auth';
+@import 'Dashboard';
+@import 'Faculty';
+@import 'Student';
+@import 'Course';
+@import 'Department';
