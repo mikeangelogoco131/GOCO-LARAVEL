@@ -136,6 +136,11 @@ body {
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
 
+// Status pills
+.status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; line-height: 1; }
+.status-active { background: rgba($success, .12); color: $success; border: 1px solid rgba($success, .35); }
+.status-archived { background: rgba($danger, .10); color: $danger-600; border: 1px solid rgba($danger, .35); }
+
 // Page imports
 @import 'Sidebar';
 @import 'Auth';

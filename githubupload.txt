@@ -1,0 +1,17 @@
+CREATING NEW REPOSITORY ON THE COMMAND LINE
+git init
+git commit -m "first commit"
+git branch -M main
+git remote add origin https://github.com/mikeangelogoco131/GOCO-LARAVEL.git
+git push -u origin main
+
+
+
+
+
+
+
+
+UPLOADING PROJECT TO A EXISTING REPOSITORY
+git remote add origin https://github.com/mikeangelogoco131/GOCO-LARAVEL.git
+git push -u origin HEAD

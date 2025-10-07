@@ -9,8 +9,8 @@ export function renderStudents() {
       <div class="card">
         <div class="toolbar" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
           <input class="input" placeholder="Search students..." id="students-search" />
-          <select class="input" id="students-course" style="min-width:200px"></select>
           <select class="input" id="students-dept" style="min-width:200px"></select>
+          <select class="input" id="students-course" style="min-width:200px"></select>
           <select class="input" id="students-year" style="min-width:200px"></select>
           <button class="btn btn-primary" id="btn-add-student">Add student</button>
           <div style="margin-left:auto"></div>
@@ -44,8 +44,8 @@ export function renderStudents() {
           <input class="input" name="birthday" type="date" placeholder="Birthday" />
           <input class="input" name="email" type="email" placeholder="Email" required />
           <div class="grid two">
-            <select class="input" name="course_id" id="students-form-course" required></select>
             <select class="input" name="department_id" id="students-form-dept" required></select>
+            <select class="input" name="course_id" id="students-form-course" required></select>
           </div>
           <select class="input" name="academic_year_id" id="students-form-year"></select>
           <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:12px;">
@@ -70,10 +70,62 @@ export async function afterStudentsMount() {
 
   let editId = null;
 
-  async function loadCourses(selectEl) {
-    const list = await fetch('/api/courses').then(r=>r.json()).then(j=>j.data||j).catch(()=>[]);
-    course.innerHTML = ['<option value="">All courses</option>'].concat(list.map(c=>`<option value="${c.id}">${c.title}</option>`)).join('');
-    if (selectEl) selectEl.innerHTML = ['<option value="" disabled selected>Select course</option>'].concat(list.map(c=>`<option value="${c.id}">${c.title}</option>`)).join('');
+  async function loadCourses(selectEl, departmentId = null, updateToolbar = true) {
+    try {
+      // Optional loading state for modal select
+      if (selectEl && departmentId) {
+        selectEl.innerHTML = '<option value="" disabled selected>Loading courses…</option>';
+        selectEl.disabled = true;
+      }
+      const qs = new URLSearchParams();
+      qs.set('per_page', '2000');
+      if (departmentId) qs.set('department_id', String(departmentId).trim());
+      let list = await fetch(`/api/courses?${qs.toString()}`)
+        .then(r=>r.json())
+        .then(j => Array.isArray(j) ? j : (Array.isArray(j.data) ? j.data : (Array.isArray(j.data?.data) ? j.data.data : [])))
+        .catch(()=>[]);
+
+      // Fallback: if server-side filter unexpectedly returned empty but a departmentId exists,
+      // fetch all courses and filter client-side.
+      if ((list.length === 0) && departmentId) {
+        const all = await fetch('/api/courses?per_page=2000')
+          .then(r=>r.json())
+          .then(j => Array.isArray(j) ? j : (Array.isArray(j.data) ? j.data : (Array.isArray(j.data?.data) ? j.data.data : [])))
+          .catch(()=>[]);
+        const depIdNum = Number(String(departmentId).trim());
+        list = all.filter(c => Number(c.department_id) === depIdNum);
+      }
+
+      // Optional: update top toolbar course filter
+      if (updateToolbar && course) {
+        const topOptions = ['<option value="">All courses</option>'].concat(list.map(c=>`<option value="${c.id}">${c.title}</option>`));
+        course.innerHTML = topOptions.join('');
+        if (departmentId !== null) course.value = '';
+      }
+
+      // Modal course select
+      if (selectEl) {
+        if (!departmentId) {
+          selectEl.innerHTML = '<option value="" disabled selected>Select department first</option>';
+          selectEl.disabled = true;
+        } else if (!list.length) {
+          selectEl.innerHTML = '<option value="" disabled selected>No courses available</option>';
+          selectEl.disabled = true;
+        } else {
+          selectEl.innerHTML = ['<option value="" disabled selected>Select course</option>']
+            .concat(list.map(c=>`<option value="${c.id}">${c.title}</option>`)).join('');
+          selectEl.disabled = false;
+        }
+      }
+      return list;
+    } catch (e) {
+      console.error('Failed to load courses', e);
+      if (selectEl) {
+        selectEl.innerHTML = '<option value="" disabled selected>Unable to load courses</option>';
+        selectEl.disabled = true;
+      }
+      return [];
+    }
   }
   async function loadDepartments(selectEl) {
     const list = await fetch('/api/departments').then(r=>r.json()).then(j=>j.data||j).catch(()=>[]);
@@ -95,7 +147,10 @@ export async function afterStudentsMount() {
     const base = toggleArchived.checked ? '/api/students-archived' : '/api/students';
     const res = await fetch(`${base}?${params.toString()}`);
     const json = await res.json();
-    const rows = (json.data || json).map(s => `
+    const rows = (json.data || json).map(s => {
+      const statusClass = (s.status || '').toLowerCase() === 'active' ? 'status-active' : 'status-archived';
+      const statusLabel = s.status || 'active';
+      return `
       <tr>
         <td>${s.student_id ?? ''}</td>
         <td>${[s.first_name, s.middle_name, s.last_name, s.suffix].filter(Boolean).join(' ')}</td>
@@ -105,17 +160,18 @@ export async function afterStudentsMount() {
         <td>${s.course?.title ?? ''}</td>
         <td>${s.department?.name ?? ''}</td>
         <td>${s.academic_year?.name ?? s.academicYear?.name ?? ''}</td>
-        <td>${s.status}</td>
+        <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
         <td>
           ${toggleArchived.checked
             ? `<button class="btn" data-stu-restore="${s.id}">Restore</button>`
             : `<button class="btn" data-stu-edit="${s.id}">Edit</button> <button class="btn" data-stu-archive="${s.id}">Archive</button>`}
         </td>
-      </tr>`).join('');
+      </tr>`
+    }).join('');
     tbody.innerHTML = rows;
   }
 
-  function openModal(mode='add', data=null) {
+  async function openModal(mode='add', data=null) {
     const modal = document.getElementById('students-modal');
     const title = document.getElementById('students-modal-title');
     const form = document.getElementById('students-form');
@@ -127,7 +183,7 @@ export async function afterStudentsMount() {
     title.textContent = mode === 'edit' ? 'Edit student' : 'Add student';
     editId = data?.id ?? null;
     form.reset();
-    if (data) {
+  if (data) {
       form.first_name.value = data.first_name;
       form.middle_name.value = data.middle_name || '';
       form.last_name.value = data.last_name;
@@ -135,14 +191,29 @@ export async function afterStudentsMount() {
       form.gender.value = data.gender || '';
   form.email.value = data.email;
   form.birthday.value = data.birthday || '';
-      setTimeout(() => {
-        form.course_id.value = data.course_id;
-        form.department_id.value = data.department_id;
-        form.academic_year_id.value = data.academic_year_id || '';
-      }, 0);
+      // We'll set department and course after options are loaded below
     }
     modal.hidden = false;
-    loadCourses(selCourse); loadDepartments(selDept); loadYears(selYear);
+    // Load departments and years; courses will be enabled after department selection
+    await loadDepartments(selDept);
+    await loadYears(selYear);
+    // Initialize course select as disabled until a department is chosen
+    await loadCourses(selCourse, null, false);
+
+    // If editing, preselect department and course now that options are ready
+    if (data) {
+      selDept.value = data.department_id;
+      await loadCourses(selCourse, data.department_id, false);
+      selCourse.value = data.course_id;
+      selYear.value = data.academic_year_id || '';
+    }
+
+    // Cascade: when department changes inside modal, refresh courses accordingly
+    selDept.onchange = async () => {
+      await loadCourses(selCourse, selDept.value || null, false);
+      // Reset selected course after department change
+      selCourse.value = '';
+    };
   }
 
   function closeModal() { document.getElementById('students-modal').hidden = true; editId = null; }
@@ -150,7 +221,12 @@ export async function afterStudentsMount() {
   // Events
   search.addEventListener('input', () => loadTable());
   course.addEventListener('change', () => loadTable());
-  dept.addEventListener('change', () => loadTable());
+  dept.addEventListener('change', async () => {
+    // Cascade toolbar: when department filter changes, narrow the courses list
+    await loadCourses(null, dept.value || null, true);
+    course.value = '';
+    loadTable();
+  });
   year.addEventListener('change', () => loadTable());
   toggleArchived.addEventListener('change', () => loadTable());
   btnAdd.addEventListener('click', () => openModal('add'));

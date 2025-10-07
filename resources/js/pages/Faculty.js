@@ -75,20 +75,24 @@ export async function afterFacultyMount() {
     const base = showArchived.checked ? '/api/faculties-archived' : '/api/faculties';
     const res = await fetch(`${base}?${params.toString()}`);
     const json = await res.json();
-    const rows = (json.data || json).map(f => `
+    const rows = (json.data || json).map(f => {
+      const statusClass = (f.status || '').toLowerCase() === 'active' ? 'status-active' : 'status-archived';
+      const statusLabel = f.status || 'active';
+      return `
       <tr>
         <td>${f.faculty_id ?? ''}</td>
         <td>${[f.first_name, f.middle_name, f.last_name, f.suffix].filter(Boolean).join(' ')}</td>
         <td>${f.position ?? ''}</td>
         <td>${f.email}</td>
         <td>${f.department?.name ?? ''}</td>
-        <td>${f.status}</td>
+        <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
         <td>
           ${showArchived.checked
             ? `<button class="btn" data-restore="${f.id}">Restore</button>`
             : `<button class="btn" data-edit="${f.id}">Edit</button> <button class="btn" data-archive="${f.id}">Delete</button>`}
         </td>
-      </tr>`).join('');
+      </tr>`
+    }).join('');
     tbody.innerHTML = rows;
   }
 
