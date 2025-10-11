@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use Illuminate\Support\Facades\Log;
 
 /*
 |--------------------------------------------------------------------------
@@ -51,3 +52,18 @@ Route::get('/students', function () { return view('welcome'); })->name('students
 Route::get('/reports', function () { return view('welcome'); })->name('reports');
 Route::get('/settings', function () { return view('welcome'); })->name('settings');
 Route::get('/profile', function () { return view('welcome'); })->name('profile');
+
+// Simple contact endpoint (public)
+Route::post('/contact', function (\Illuminate\Http\Request $request) {
+	$data = $request->validate([
+		'name' => ['required','string','max:120'],
+		'email' => ['required','email','max:150'],
+		'message' => ['required','string','max:2000'],
+	]);
+	// For now, log the message. In production, you might mail() or store in DB.
+	Log::info('Contact message', $data);
+	if ($request->expectsJson()) {
+		return response()->json(['ok' => true]);
+	}
+	return back()->with('status', 'Message sent!');
+});
