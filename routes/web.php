@@ -15,7 +15,13 @@ use App\Http\Controllers\AuthController;
 */
 
 // Single-page app entry - we still gate access server-side for top-level routes
-Route::get('/', function () { return view('welcome'); });
+// Public Home (landing) page shown before login/register; redirect authed users to dashboard
+Route::get('/', function () {
+	if (auth()->check()) {
+		return redirect()->route('dashboard');
+	}
+	return view('home');
+})->name('home');
 
 // Auth routes
 // Auth actions (SPA renders forms, backend processes)
@@ -27,8 +33,18 @@ Route::middleware('auth')->group(function () {
 });
 
 // Let the SPA handle the following GET routes client-side; server always returns the same shell
-Route::get('/login', function () { return view('welcome'); })->name('login');
-Route::get('/register', function () { return view('welcome'); })->name('register');
+Route::get('/login', function () {
+	if (auth()->check()) {
+		return redirect()->route('dashboard');
+	}
+	return view('welcome');
+})->name('login');
+Route::get('/register', function () {
+	if (auth()->check()) {
+		return redirect()->route('dashboard');
+	}
+	return view('welcome');
+})->name('register');
 Route::get('/dashboard', function () { return view('welcome'); })->name('dashboard');
 Route::get('/faculty', function () { return view('welcome'); })->name('faculty.index');
 Route::get('/students', function () { return view('welcome'); })->name('students.index');
