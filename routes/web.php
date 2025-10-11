@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Log;
+use App\Models\ContactMessage;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,10 +61,11 @@ Route::post('/contact', function (\Illuminate\Http\Request $request) {
 		'email' => ['required','email','max:150'],
 		'message' => ['required','string','max:2000'],
 	]);
-	// For now, log the message. In production, you might mail() or store in DB.
-	Log::info('Contact message', $data);
+	// Save to DB
+	$msg = ContactMessage::create($data);
+	Log::info('Contact message saved', ['id' => $msg->id] + $data);
 	if ($request->expectsJson()) {
-		return response()->json(['ok' => true]);
+		return response()->json(['ok' => true, 'id' => $msg->id]);
 	}
 	return back()->with('status', 'Message sent!');
 });
