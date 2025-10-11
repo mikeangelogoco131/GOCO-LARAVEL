@@ -40,13 +40,17 @@ export function afterContactManagerMount() {
     const params = new URLSearchParams();
     params.set('page', String(state.page));
     if (state.q) params.set('q', state.q);
-    const res = await fetch(`/api/contact-messages?${params.toString()}`);
-    if (!res.ok) { setTbody(`<tr><td colspan="5">Failed to load.</td></tr>`); return; }
-    const data = await res.json();
-    const rows = data.data.map((m, i) => rowTpl(m, i, data.from)).join('') || `<tr><td colspan="5">No messages.</td></tr>`;
-    setTbody(rows);
-    renderPager(data);
-    bindRowEvents();
+    try {
+      const res = await fetch(`/api/contact-messages?${params.toString()}`, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) { setTbody(`<tr><td colspan=\"5\">Failed to load (${res.status}).</td></tr>`); return; }
+      const data = await res.json();
+      const rows = (data.data || []).map((m, i) => rowTpl(m, i, data.from)).join('') || `<tr><td colspan=\"5\">No messages.</td></tr>`;
+      setTbody(rows);
+      renderPager(data);
+      bindRowEvents();
+    } catch (err) {
+      setTbody(`<tr><td colspan=\"5\">Failed to load. Is the server running?</td></tr>`);
+    }
   }
 
   function rowTpl(m, i, from) {
@@ -114,7 +118,7 @@ export function afterContactManagerMount() {
     });
   }
 
-  inputQ.addEventListener('change', () => { state.q = inputQ.value.trim(); state.page = 1; load(); });
+  inputQ.addEventListener('input', () => { state.q = inputQ.value.trim(); state.page = 1; load(); });
   btnRefresh.addEventListener('click', () => load());
 
   load();

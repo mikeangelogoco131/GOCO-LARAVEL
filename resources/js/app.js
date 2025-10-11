@@ -32,7 +32,13 @@ const App = (() => {
 		const def = routes[path];
 		if (!def) return navigate('/login', true);
 		if (isAuthed()) return navigate('/dashboard', true);
-		elApp().innerHTML = def.render();
+		// Wrap in page-enter for animation
+		elApp().innerHTML = `<div class="page-enter">${def.render()}</div>`;
+		// restart animation by forcing reflow
+		requestAnimationFrame(() => {
+			const el = elApp().querySelector('.page-enter');
+			if (el) { el.classList.remove('page-enter'); void el.offsetWidth; el.classList.add('page-enter'); }
+		});
 		def.after && def.after();
 	}
 
@@ -42,6 +48,11 @@ const App = (() => {
 		if (!isAuthed()) return navigate('/login', true);
 		const content = def.render();
 		elApp().innerHTML = renderLayout({ content, currentPath: path, user: user() });
+		// restart animation for protected pages by toggling class inside .app-main
+		requestAnimationFrame(() => {
+			const container = elApp().querySelector('.app-main .page-enter');
+			if (container) { container.classList.remove('page-enter'); void container.offsetWidth; container.classList.add('page-enter'); }
+		});
 		afterLayoutMount();
 		def.after && def.after();
 	}

@@ -16,21 +16,28 @@ export function renderLayout({ content, currentPath, user }) {
     </a>
   `).join('');
 
+  const headerActions = `
+    <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
+      ${currentPath === '/dashboard' ? '<a href="/contact-manager" data-nav class="btn btn-outline">✉️ Contact Manager</a>' : ''}
+      <button class="btn btn-outline" id="btn-logout" type="button">Logout</button>
+    </div>
+  `;
+
   return `
     <div class="app-shell">
       <aside class="app-sidebar">
         <div class="sidebar">
           <div class="brand">FSUU - SFPMS</div>
           ${navLinks}
-          <div style="margin-top:auto; padding-top:12px; border-top: 1px dashed rgba(0,0,0,.08)">
-            <button class="nav-link" id="btn-logout" type="button">
-              <span class="icon">🚪</span>
-              <span>Logout</span>
-            </button>
-          </div>
         </div>
       </aside>
-      <main class="app-main">${content}</main>
+      <header class="app-header">
+        <div style="display:flex; align-items:center; gap:12px; width:100%">
+          <div class="app-title brand-gradient">FSUU - Student &amp; Faculty Profile Management System</div>
+          ${headerActions}
+        </div>
+      </header>
+  <main class="app-main"><div class="page-enter">${content}</div></main>
     </div>
     <footer class="app-footer">
       <div class="container">© ${new Date().getFullYear()} Student & Faculty Management</div>
@@ -39,7 +46,7 @@ export function renderLayout({ content, currentPath, user }) {
 }
 
 export function afterLayoutMount() {
-  // Logout handling
+  // Logout handling (header button)
   const logout = document.getElementById('btn-logout');
   if (logout) {
     logout.addEventListener('click', async () => {

@@ -74,3 +74,34 @@ $radius: 14px;
   .hero .container { grid-template-columns: 1fr; padding-top: 36px; }
   .contact .contact-layout { grid-template-columns: 1fr; }
 }
+
+// Reveal on scroll
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; will-change: opacity, transform; }
+.reveal.in-view { opacity: 1; transform: none; }
+.reveal[style*="--delay"] { transition-delay: var(--delay, 0s); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
+
+// Extra sections
+.why, .how, .modules, .faq { padding: 28px 0 60px; border-top: 1px solid $border; }
+.why .grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+.why .card { background: $white; border: 1px solid $border; border-radius: $radius; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
+
+.how .steps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; counter-reset: step; }
+.how .step { background: $white; border: 1px solid $border; border-radius: $radius; padding: 16px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
+.how .step::before { counter-increment: step; content: counter(step); position: absolute; top: -12px; left: -12px; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; color: #fff; font-weight: 800; background: linear-gradient(135deg, $bg, $bg2); box-shadow: 0 6px 14px rgba(0,0,0,.08); }
+
+.modules .grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; }
+.modules .mcard { background: $white; border: 1px solid $border; border-radius: $radius; padding: 16px; box-shadow: 0 4px 20px rgba(0,0,0,.04); }
+.modules .mcard h3 { margin: 0 0 8px; }
+
+.faq .faq-list { display: grid; gap: 10px; }
+.faq details { background: $white; border: 1px solid $border; border-radius: $radius; padding: 12px 14px; box-shadow: 0 4px 20px rgba(0,0,0,.03); }
+.faq summary { cursor: pointer; font-weight: 700; }
+.faq details[open] { box-shadow: 0 6px 22px rgba(0,0,0,.05); }
+
+@media (max-width: 900px) {
+  .why .grid, .how .steps, .modules .grid { grid-template-columns: 1fr; }
+}

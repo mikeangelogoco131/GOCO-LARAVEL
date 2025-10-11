@@ -21,11 +21,30 @@ body {
     'sidebar main';
   min-height: 100vh;
 }
-.app-header { grid-area: header; background: linear-gradient(90deg, $primary-600, $accent); color: #fff; border-bottom: 0; display: flex; align-items: center; padding: 0 16px; }
-.app-header .input { background: rgba(255,255,255,.15); color: #fff; border-color: transparent; }
-.app-header .btn-outline { color: #fff; border-color: rgba(255,255,255,.4); }
+.app-header { grid-area: header; background: #fff; color: $text; border-bottom: 1px solid $border; display: flex; align-items: center; padding: 0 16px; }
+.app-header .input { background: #fff; color: $text; border-color: $border; }
+.app-header .btn-outline,
+.app-header .btn-outline:visited { color: #111; border-color: rgba(0,0,0,.2); background: #fff; }
+.app-header .btn-outline:hover { color: #111; border-color: rgba(0,0,0,.3); background: #f4f4f5; }
+.app-title { font-weight: 800; letter-spacing: .3px; font-size: 16px; color: $text; }
+.brand-gradient {
+  background: linear-gradient(90deg, $primary-600, $accent);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent; // Safari/iOS support
+  color: transparent; // fallback
+}
 .app-sidebar { grid-area: sidebar; background: linear-gradient(180deg, #fff, $surface); border-right: 1px solid $border; padding: 16px; position: sticky; top: 0; height: 100vh; }
 .app-main { grid-area: main; padding: 20px; }
+
+// Global page enter animation
+.page-enter { opacity: 0; transform: translateY(10px); animation: pageFadeIn .5s ease forwards; }
+@keyframes pageFadeIn {
+  to { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-enter { opacity: 1; transform: none; animation: none; }
+}
 
 // Reusable components
 .card { background: #fff; border: 1px solid $border; border-radius: 10px; box-shadow: $shadow; padding: 16px; }
