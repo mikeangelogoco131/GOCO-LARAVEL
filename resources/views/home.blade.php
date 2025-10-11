@@ -121,6 +121,7 @@
                 <textarea id="c-msg" name="message" class="input" rows="5" placeholder="How can we help?" required></textarea>
               </div>
               <div class="actions">
+                <a href="/contact-manager" data-nav class="btn btn-outline">Contact manager</a>
                 <button class="btn primary" type="submit">Send message</button>
               </div>
               <p id="contact-status" class="status" hidden></p>

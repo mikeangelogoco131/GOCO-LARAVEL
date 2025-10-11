@@ -9,6 +9,7 @@ import { renderReports, afterReportsMount } from './pages/Reports';
 import { renderProfile, afterProfileMount } from './pages/Profile';
 import { renderLogin, afterLoginMount } from './pages/Login';
 import { renderRegister, afterRegisterMount } from './pages/Register';
+import { renderContactManager, afterContactManagerMount } from './pages/ContactManager';
 
 const App = (() => {
 	const elApp = () => document.getElementById('app');
@@ -24,6 +25,7 @@ const App = (() => {
 		'/profile': { auth: true, render: renderProfile, after: afterProfileMount },
 		'/login': { auth: false, render: renderLogin, after: afterLoginMount },
 		'/register': { auth: false, render: renderRegister, after: afterRegisterMount },
+		'/contact-manager': { auth: true, render: renderContactManager, after: afterContactManagerMount },
 	};
 
 	function mountAuthPage(path) {

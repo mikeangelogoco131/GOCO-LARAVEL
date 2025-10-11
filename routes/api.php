@@ -6,6 +6,7 @@ use App\Models\Student;
 use App\Models\Faculty;
 use App\Models\Course;
 use App\Models\Department;
+use App\Http\Controllers\ContactMessageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -54,3 +55,8 @@ Route::get('summary', function() {
         'facultyPerDepartment' => Department::withCount('faculties')->get()->map(fn($d)=>['department'=>$d->code, 'count'=>$d->faculties_count])->values(),
     ];
 });
+
+// Contact messages (manager) — protect if needed later with auth:sanctum
+Route::get('contact-messages', [ContactMessageController::class, 'index']);
+Route::put('contact-messages/{id}', [ContactMessageController::class, 'update']);
+Route::delete('contact-messages/{id}', [ContactMessageController::class, 'destroy']);
