@@ -44,6 +44,18 @@ export function afterProfileMount() {
     err.hidden = true; ok.hidden = true; err.textContent = '';
     const fd = new FormData(form);
     const payload = Object.fromEntries(fd.entries());
+    // Client-side handling for optional password change
+    const pwd = (payload.password || '').trim();
+    const pwd2 = (payload.password_confirmation || '').trim();
+    if (!pwd && !pwd2) {
+      delete payload.password;
+      delete payload.password_confirmation;
+    } else {
+      if (!pwd) { err.textContent = 'Please enter a new password or leave both fields empty.'; err.hidden = false; return; }
+      if (!pwd2) { err.textContent = 'Please confirm your new password.'; err.hidden = false; return; }
+      if (pwd !== pwd2) { err.textContent = 'Passwords do not match.'; err.hidden = false; return; }
+      if (pwd.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.hidden = false; return; }
+    }
     try {
       const res = await fetch('/profile', {
         method: 'POST',
@@ -52,7 +64,16 @@ export function afterProfileMount() {
       });
       if (!res.ok) {
         const j = await res.json().catch(()=>({}));
-        const msg = j?.message || Object.values(j?.errors||{})[0]?.[0] || 'Update failed';
+        let msg = 'Update failed';
+        if (j?.errors && typeof j.errors === 'object') {
+          const parts = [];
+          for (const [k, v] of Object.entries(j.errors)) {
+            const first = Array.isArray(v) ? v[0] : String(v);
+            parts.push(first);
+          }
+          if (parts.length) msg = parts.join(' ');
+        }
+        if (j?.message) msg = j.message;
         throw new Error(msg);
       }
       const json = await res.json();

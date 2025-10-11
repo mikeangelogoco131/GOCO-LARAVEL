@@ -17,7 +17,7 @@ class StudentController extends Controller
     {
         $q = Student::query()->with(['course','department','academicYear']);
         if ($request->filled('search')) {
-            $s = $request->string('search');
+            $s = trim((string) $request->input('search', ''));
             $q->where(fn($qq) => $qq
                 ->where('first_name','like',"%$s%")
                 ->orWhere('last_name','like',"%$s%")
@@ -27,9 +27,9 @@ class StudentController extends Controller
                 ->orWhere('email','like',"%$s%")
             );
         }
-        if ($request->filled('course_id')) $q->where('course_id', $request->integer('course_id'));
-        if ($request->filled('department_id')) $q->where('department_id', $request->integer('department_id'));
-        if ($request->filled('academic_year_id')) $q->where('academic_year_id', $request->integer('academic_year_id'));
+    if ($request->filled('course_id')) $q->where('course_id', (int) $request->input('course_id'));
+    if ($request->filled('department_id')) $q->where('department_id', (int) $request->input('department_id'));
+    if ($request->filled('academic_year_id')) $q->where('academic_year_id', (int) $request->input('academic_year_id'));
         if ($request->filled('status')) $q->where('status', $request->input('status'));
     $per = max(1, min(2000, (int) $request->input('per_page', 20)));
     return $q->paginate($per);
@@ -159,7 +159,7 @@ class StudentController extends Controller
     {
         $q = Student::onlyTrashed()->with(['course','department','academicYear']);
         if ($request->filled('search')) {
-            $s = $request->string('search');
+            $s = trim((string) $request->input('search', ''));
             $q->where(fn($qq) => $qq
                 ->where('first_name','like',"%$s%")
                 ->orWhere('last_name','like',"%$s%")
@@ -169,9 +169,9 @@ class StudentController extends Controller
                 ->orWhere('email','like',"%$s%")
             );
         }
-        if ($request->filled('course_id')) $q->where('course_id', $request->integer('course_id'));
-        if ($request->filled('department_id')) $q->where('department_id', $request->integer('department_id'));
-        if ($request->filled('academic_year_id')) $q->where('academic_year_id', $request->integer('academic_year_id'));
+    if ($request->filled('course_id')) $q->where('course_id', (int) $request->input('course_id'));
+    if ($request->filled('department_id')) $q->where('department_id', (int) $request->input('department_id'));
+    if ($request->filled('academic_year_id')) $q->where('academic_year_id', (int) $request->input('academic_year_id'));
     $per = max(1, min(2000, (int) request()->input('per_page', 20)));
     return $q->paginate($per);
     }

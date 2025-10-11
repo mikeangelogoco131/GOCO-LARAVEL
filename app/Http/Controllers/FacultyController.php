@@ -17,7 +17,7 @@ class FacultyController extends Controller
     {
         $q = Faculty::query()->with('department');
         if ($request->filled('search')) {
-            $s = $request->string('search');
+            $s = trim((string) $request->input('search', ''));
             $q->where(fn($qq) => $qq
                 ->where('first_name','like',"%$s%")
                 ->orWhere('last_name','like',"%$s%")
@@ -28,7 +28,7 @@ class FacultyController extends Controller
                 ->orWhere('position','like',"%$s%")
             );
         }
-        if ($request->filled('department_id')) $q->where('department_id', $request->integer('department_id'));
+    if ($request->filled('department_id')) $q->where('department_id', (int) $request->input('department_id'));
         if ($request->filled('status')) $q->where('status', $request->input('status'));
     $per = max(1, min(2000, (int) $request->input('per_page', 20)));
     return $q->paginate($per);
@@ -138,7 +138,7 @@ class FacultyController extends Controller
     {
         $q = Faculty::onlyTrashed()->with('department');
         if (request()->filled('search')) {
-            $s = request()->string('search');
+            $s = trim((string) request()->input('search', ''));
             $q->where(fn($qq) => $qq
                 ->where('first_name','like',"%$s%")
                 ->orWhere('last_name','like',"%$s%")
@@ -146,7 +146,7 @@ class FacultyController extends Controller
                 ->orWhere('position','like',"%$s%")
             );
         }
-        if (request()->filled('department_id')) $q->where('department_id', request()->integer('department_id'));
+    if (request()->filled('department_id')) $q->where('department_id', (int) request()->input('department_id'));
     $per = max(1, min(2000, (int) request()->input('per_page', 20)));
     return $q->paginate($per);
     }

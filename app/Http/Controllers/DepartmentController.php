@@ -17,7 +17,7 @@ class DepartmentController extends Controller
     {
         $q = Department::query();
         if ($request->filled('search')) {
-            $s = $request->string('search');
+            $s = trim((string) $request->input('search', ''));
             $q->where(fn($qq)=>$qq->where('code','like',"%$s%")->orWhere('name','like',"%$s%"));
         }
     $per = max(1, min(2000, (int) $request->input('per_page', 20)));

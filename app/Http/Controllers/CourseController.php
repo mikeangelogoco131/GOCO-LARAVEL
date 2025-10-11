@@ -16,9 +16,9 @@ class CourseController extends Controller
     public function index(Request $request)
     {
         $q = Course::query()->with('department');
-        if ($request->filled('department_id')) $q->where('department_id', $request->integer('department_id'));
+    if ($request->filled('department_id')) $q->where('department_id', (int) $request->input('department_id'));
         if ($request->filled('search')) {
-            $s = $request->string('search');
+            $s = trim((string) $request->input('search', ''));
             $q->where(fn($qq)=>$qq->where('code','like',"%$s%")->orWhere('title','like',"%$s%"));
         }
     $per = max(1, min(2000, (int) $request->input('per_page', 20)));

@@ -15,3 +15,13 @@ git push -u origin main
 UPLOADING PROJECT TO A EXISTING REPOSITORY
 git remote add origin https://github.com/mikeangelogoco131/GOCO-LARAVEL.git
 git push -u origin HEAD
+
+
+
+
+uploading or saving for next checkpoint
+git status --porcelain
+git add -A
+git commit -m "feat(dashboard): modernize charts; feat(students): department→course cascade; fix: robust course filtering; style: status pills; docs: GitHub push notes"
+git remote -v
+git push -u origin main
