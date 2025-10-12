@@ -1,0 +1,233 @@
+ERD dbdiagram.io
+
+Project FSUU_SFPMS {
+  database_type: "MySQL" // matches typical Laravel setup; change if needed
+  Note: 'Student & Faculty Profile Management System'
+}
+
+/* ========== Core Master Data ========== */
+
+Table departments {
+  id int [pk, increment]
+  name varchar(100) [not null, unique]
+  code varchar(20) [unique, note: 'Program code, e.g. CITE']
+  status varchar(20) [not null, default: 'active', note: 'active|archived']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table courses {
+  id int [pk, increment]
+  department_id int [not null, ref: > departments.id]
+  name varchar(120) [not null, unique]
+  code varchar(20) [unique, note: 'Course code, e.g. BSCS']
+  status varchar(20) [not null, default: 'active', note: 'active|archived']
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (department_id)
+  }
+}
+
+Table academic_years {
+  id int [pk, increment]
+  name varchar(25) [not null, unique, note: 'e.g. 2025-2026']
+  start_date date
+  end_date date
+  current boolean [not null, default: false, note: 'App enforces only one current=true']
+  created_at timestamp
+  updated_at timestamp
+}
+
+/* ========== People ========== */
+
+Table students {
+  id int [pk, increment]
+  first_name varchar(80) [not null]
+  last_name varchar(80) [not null]
+  email varchar(150) [unique]
+  phone varchar(30)
+  department_id int [not null, ref: > departments.id, note: 'UI cascades with course']
+  course_id int [not null, ref: > courses.id, note: 'Must belong to selected department']
+  academic_year_id int [ref: > academic_years.id, note: 'Optional context']
+  status varchar(20) [not null, default: 'active', note: 'active|archived']
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (department_id)
+    (course_id)
+    (department_id, course_id)
+  }
+}
+
+Table faculty {
+  id int [pk, increment]
+  first_name varchar(80) [not null]
+  last_name varchar(80) [not null]
+  email varchar(150) [unique]
+  phone varchar(30)
+  department_id int [not null, ref: > departments.id]
+  academic_year_id int [ref: > academic_years.id, note: 'Optional context']
+  title varchar(80) [note: 'e.g. Instructor, Professor']
+  status varchar(20) [not null, default: 'active', note: 'active|archived']
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (department_id)
+  }
+}
+
+/* ========== Public Contact (Home page) ========== */
+
+Table contact_messages {
+  id int [pk, increment]
+  name varchar(120) [not null]
+  email varchar(150) [not null]
+  message text [not null]
+  created_at timestamp
+  updated_at timestamp
+}
+
+/* ========== Authentication & System (Laravel) ========== */
+
+Table users {
+  id int [pk, increment]
+  name varchar(120) [not null]
+  email varchar(150) [not null, unique]
+  email_verified_at timestamp
+  password varchar(255) [not null]
+  remember_token varchar(100)
+  role varchar(30) [not null, default: 'user', note: 'Optional: admin|user']
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table personal_access_tokens {
+  id bigint [pk, increment]
+  tokenable_type varchar(255) [not null]
+  tokenable_id bigint [not null]
+  name varchar(255) [not null]
+  token varchar(64) [not null, unique]
+  abilities text
+  last_used_at timestamp
+  expires_at timestamp
+  created_at timestamp
+  updated_at timestamp
+
+  Indexes {
+    (tokenable_type, tokenable_id)
+  }
+}
+
+Table password_resets {
+  email varchar(255) [not null, pk]
+  token varchar(255) [not null]
+  created_at timestamp
+}
+
+Table failed_jobs {
+  id bigint [pk, increment]
+  uuid varchar(255) [not null, unique]
+  connection longtext [not null]
+  queue longtext [not null]
+  payload longtext [not null]
+  exception longtext [not null]
+  failed_at timestamp [not null]
+}
+
+/* ========== Notes ========== */
+/*
+- Students hold both department_id and course_id for fast filters and simple UI cascades.
+  Enforce that courses.department_id == students.department_id in app logic (or advanced DB constraints).
+- academic_years.current should have at most one true; enforce in app logic.
+- contact_messages are public submissions, managed via Contact Manager in the dashboard.
+*/
+
+
+
+
+
+
+
+
+
+explanation of the failed_jobs, password_resets, personal_access_tokens
+
+failed_jobs
+
+    Purpose:
+    Stores background jobs that crashed or exhausted their retry attempts when using Laravel Queues.
+    
+    When it’s used:
+    Any time a queued job (emails, imports, notifications, etc.) throws an exception and fails, Laravel records the full payload and exception here for troubleshooting and optional retrying.
+    
+    Key columns:
+    id/uuid: Unique identifiers for the failed job (uuid is handy for CLI operations).
+    connection, queue: Which queue driver and queue name were used (e.g., database, redis; default queue).
+
+    payload: The serialized job class + data at the moment it was dispatched.
+
+    exception: The full stack trace/exception message.
+    
+    failed_at: When it failed.
+
+    Typical operations:
+    List failed jobs, retry a single job (by id/uuid) or all, delete a single job, or flush all failed jobs.
+    You’ll use Laravel’s queue commands to do those (no code changes required).
+
+    ERD note:
+    It’s an infrastructure table. It doesn’t relate to your domain tables directly, which is why it appears isolated.
+
+
+
+password_resets
+
+    Purpose:
+    Backs the “Forgot Password” flow.
+
+    Flow:
+    User requests a reset → Laravel generates a reset token, stores a record with email + token (the token is hashed in newer Laravel versions), and emails the reset link.
+    User submits the form with the token → Laravel verifies the token for that email and expiry window → resets the password → deletes the token row.
+
+    Key columns:
+    email: The account to reset (used to find the user).
+    token: The reset token (hashed by default).
+    created_at: Used to enforce token expiry.
+
+    Configuration:
+    Expiry window is controlled under auth.php (passwords.users.expire, default ~60 minutes).
+
+    ERD note:
+    It’s a system/security table, not part of your “students/faculty/departments” domain, so it stands alone.
+
+personal_access_tokens (Sanctum)
+
+    Purpose:
+    Stores API tokens issued by Laravel Sanctum. Useful for mobile apps, external integrations, or when you want token-based auth instead of session cookies.
+
+    How it works:
+    When you create a token (e.g., $user->createToken('DeviceName', ['*'])), Sanctum returns a plain-text token once (the only time you see it). The hashed value is saved in this table.
+    Requests send the token; Sanctum validates it by comparing with the hashed token in this table, checks abilities/scopes, and optionally expires it.
+
+    Key columns:
+    tokenable_type, tokenable_id: Polymorphic link to the authenticatable model (usually App\Models\User). That’s why you won’t see a direct FK line in the ERD—it’s a morph relationship.
+    name: Friendly token name (e.g., “iPhone 14”).
+    token: Hashed token (64 chars).
+    abilities: Scopes/permissions (often JSON or comma-separated text, e.g., ["*"]).
+    last_used_at, expires_at: For auditing and TTLs.
+
+    Managing tokens:
+    Revoke by deleting the row or updating expires_at.
+    Use abilities to restrict what a token can do.
+
+    ERD note:
+    Appears as a separate table with a polymorphic link, so diagram tools don’t draw a hard FK line to users (expected).
+    Where they fit in your project
+    These three are framework/system tables:
+    They support your app’s reliability (failed_jobs), password recovery (password_resets), and API auth (personal_access_tokens).
+    They’re not part of the business model (students/faculty/departments/courses), so they appear as isolated or loosely linked (polymorphic) in the ERD.
+    For a “domain-only” ERD you’d typically hide them and keep:
+    departments, courses, academic_years, students, faculty, contact_messages, and users (if needed for context).
