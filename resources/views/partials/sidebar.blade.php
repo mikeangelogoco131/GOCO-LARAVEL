@@ -1,5 +1,8 @@
 <div class="sidebar">
-    <div class="brand">SFPMS</div>
+    <div class="logo" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <img src="/images/fsuu-logo.png" alt="FSUU" width="36" height="36" style="border-radius:6px; object-fit:cover; background:#fff;" />
+        <div class="brand">SFPMS</div>
+    </div>
     <nav>
         <a class="nav-link {{ ($page ?? '')==='dashboard'?'active':'' }}" href="{{ route('dashboard') }}">Dashboard</a>
         <a class="nav-link {{ ($page ?? '')==='faculty'?'active':'' }}" href="{{ route('faculty.index') }}">Faculty</a>
