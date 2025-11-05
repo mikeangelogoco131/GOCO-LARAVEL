@@ -27,20 +27,25 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::apiResource('students', \App\Http\Controllers\StudentController::class);
 Route::get('students-archived', [\App\Http\Controllers\StudentController::class, 'archived']);
 Route::post('students/{id}/restore', [\App\Http\Controllers\StudentController::class, 'restore']);
+Route::post('students/{id}/delete', [\App\Http\Controllers\StudentController::class, 'forceDelete']);
 
 Route::apiResource('faculties', \App\Http\Controllers\FacultyController::class);
 Route::get('faculties-archived', [\App\Http\Controllers\FacultyController::class, 'archived']);
 Route::post('faculties/{id}/restore', [\App\Http\Controllers\FacultyController::class, 'restore']);
+Route::post('faculties/{id}/delete', [\App\Http\Controllers\FacultyController::class, 'forceDelete']);
 
 Route::apiResource('courses', \App\Http\Controllers\CourseController::class);
 Route::get('courses-archived', [\App\Http\Controllers\CourseController::class, 'archived']);
 Route::post('courses/{id}/restore', [\App\Http\Controllers\CourseController::class, 'restore']);
+Route::post('courses/{id}/delete', [\App\Http\Controllers\CourseController::class, 'forceDelete']);
 Route::apiResource('departments', \App\Http\Controllers\DepartmentController::class);
 Route::get('departments-archived', [\App\Http\Controllers\DepartmentController::class, 'archived']);
 Route::post('departments/{id}/restore', [\App\Http\Controllers\DepartmentController::class, 'restore']);
+Route::post('departments/{id}/delete', [\App\Http\Controllers\DepartmentController::class, 'forceDelete']);
 Route::apiResource('academic-years', \App\Http\Controllers\AcademicYearController::class);
 Route::get('academic-years-archived', [\App\Http\Controllers\AcademicYearController::class, 'archived']);
 Route::post('academic-years/{id}/restore', [\App\Http\Controllers\AcademicYearController::class, 'restore']);
+Route::post('academic-years/{id}/delete', [\App\Http\Controllers\AcademicYearController::class, 'forceDelete']);
 
 // Summary for dashboard
 Route::get('summary', function() {

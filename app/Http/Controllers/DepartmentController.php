@@ -93,4 +93,11 @@ class DepartmentController extends Controller
         $dept->restore();
         return $dept;
     }
+
+    public function forceDelete($id)
+    {
+        $dept = Department::onlyTrashed()->findOrFail($id);
+        $dept->forceDelete();
+        return response()->json(['message' => 'Deleted']);
+    }
 }

@@ -183,4 +183,11 @@ class StudentController extends Controller
         $student->update(['status' => 'active']);
     return $student->load(['course','department','academicYear']);
     }
+
+    public function forceDelete($id)
+    {
+        $student = Student::onlyTrashed()->findOrFail($id);
+        $student->forceDelete();
+        return response()->json(['message' => 'Deleted']);
+    }
 }

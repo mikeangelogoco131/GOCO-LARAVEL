@@ -88,8 +88,8 @@ export async function afterFacultyMount() {
         <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
         <td>
           ${showArchived.checked
-            ? `<button class="btn" data-restore="${f.id}">Restore</button>`
-            : `<button class="btn" data-edit="${f.id}">Edit</button> <button class="btn" data-archive="${f.id}">Delete</button>`}
+            ? `<button class="btn" data-restore="${f.id}">Restore</button> <button class="btn btn-danger" data-faculty-delete="${f.id}">Delete</button>`
+            : `<button class="btn" data-edit="${f.id}">Edit</button> <button class="btn" data-archive="${f.id}">Archive</button>`}
         </td>
       </tr>`
     }).join('');
@@ -146,6 +146,12 @@ export async function afterFacultyMount() {
     if (t.matches('[data-restore]')) {
       const id = t.getAttribute('data-restore');
       await fetch(`/api/faculties/${id}/restore`, { method: 'POST' });
+      await loadTable();
+    }
+    if (t.matches('[data-faculty-delete]')) {
+      const id = t.getAttribute('data-faculty-delete');
+      if (!confirm('Permanently delete this faculty? This cannot be undone.')) return;
+      await fetch(`/api/faculties/${id}/delete`, { method: 'POST' });
       await loadTable();
     }
   });

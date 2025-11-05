@@ -96,4 +96,11 @@ class CourseController extends Controller
         $course->restore();
         return $course->refresh()->load('department');
     }
+
+    public function forceDelete($id)
+    {
+        $course = Course::onlyTrashed()->findOrFail($id);
+        $course->forceDelete();
+        return response()->json(['message' => 'Deleted']);
+    }
 }

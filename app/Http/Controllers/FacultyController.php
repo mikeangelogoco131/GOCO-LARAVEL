@@ -158,4 +158,11 @@ class FacultyController extends Controller
         $faculty->update(['status' => 'active']);
         return $faculty->load('department');
     }
+
+    public function forceDelete($id)
+    {
+        $faculty = Faculty::onlyTrashed()->findOrFail($id);
+        $faculty->forceDelete();
+        return response()->json(['message' => 'Deleted']);
+    }
 }

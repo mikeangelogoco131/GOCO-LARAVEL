@@ -163,7 +163,7 @@ export async function afterStudentsMount() {
         <td><span class="status-pill ${statusClass}">${statusLabel}</span></td>
         <td>
           ${toggleArchived.checked
-            ? `<button class="btn" data-stu-restore="${s.id}">Restore</button>`
+            ? `<button class="btn" data-stu-restore="${s.id}">Restore</button> <button class="btn btn-danger" data-stu-delete="${s.id}">Delete</button>`
             : `<button class="btn" data-stu-edit="${s.id}">Edit</button> <button class="btn" data-stu-archive="${s.id}">Archive</button>`}
         </td>
       </tr>`
@@ -242,6 +242,12 @@ export async function afterStudentsMount() {
     if (t.matches('[data-stu-archive]')) {
       const id = t.getAttribute('data-stu-archive');
       await fetch(`/api/students/${id}`, { method: 'DELETE' });
+      await loadTable();
+    }
+    if (t.matches('[data-stu-delete]')) {
+      const id = t.getAttribute('data-stu-delete');
+      if (!confirm('Permanently delete this student? This cannot be undone.')) return;
+      await fetch(`/api/students/${id}/delete`, { method: 'POST' });
       await loadTable();
     }
     if (t.matches('[data-stu-restore]')) {

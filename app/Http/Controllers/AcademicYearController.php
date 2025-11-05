@@ -94,4 +94,11 @@ class AcademicYearController extends Controller
         $year->restore();
         return $year;
     }
+
+    public function forceDelete($id)
+    {
+        $year = AcademicYear::onlyTrashed()->findOrFail($id);
+        $year->forceDelete();
+        return response()->json(['message' => 'Deleted']);
+    }
 }

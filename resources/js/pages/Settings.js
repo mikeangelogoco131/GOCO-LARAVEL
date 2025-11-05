@@ -159,7 +159,7 @@ export function afterSettingsMount() {
         <td>${c.department?.name ?? ''}</td>
         <td>
           ${cArchived.checked
-            ? `<button class="btn" data-course-restore="${c.id}">Restore</button>`
+            ? `<button class="btn" data-course-restore="${c.id}">Restore</button> <button class="btn btn-danger" data-course-delete="${c.id}">Delete</button>`
             : `<button class="btn" data-course-edit="${c.id}">Edit</button> <button class="btn" data-course-archive="${c.id}">Archive</button>`}
         </td>
       </tr>`).join('');
@@ -186,7 +186,7 @@ export function afterSettingsMount() {
         <td>${d.name}</td>
         <td>
           ${dArchived.checked
-            ? `<button class="btn" data-dept-restore="${d.id}">Restore</button>`
+            ? `<button class="btn" data-dept-restore="${d.id}">Restore</button> <button class="btn btn-danger" data-dept-delete="${d.id}">Delete</button>`
             : `<button class="btn" data-dept-edit="${d.id}">Edit</button> <button class="btn" data-dept-archive="${d.id}">Archive</button>`}
         </td>
       </tr>`).join('');
@@ -204,7 +204,7 @@ export function afterSettingsMount() {
         <td>${y.current ? 'Yes' : 'No'}</td>
         <td>
           ${yArchived.checked
-            ? `<button class="btn" data-year-restore="${y.id}">Restore</button>`
+            ? `<button class="btn" data-year-restore="${y.id}">Restore</button> <button class="btn btn-danger" data-year-delete="${y.id}">Delete</button>`
             : `<button class="btn" data-year-edit="${y.id}">Edit</button> <button class="btn" data-year-archive="${y.id}">Archive</button>`}
         </td>
       </tr>`).join('');
@@ -289,6 +289,12 @@ export function afterSettingsMount() {
       await fetch(`/api/courses/${id}/restore`, { method: 'POST' });
       await loadCourses();
     }
+    if (t.matches('[data-course-delete]')) {
+      const id = t.getAttribute('data-course-delete');
+      if (!confirm('Permanently delete this course? This cannot be undone.')) return;
+      await fetch(`/api/courses/${id}/delete`, { method: 'POST' });
+      await loadCourses();
+    }
 
     // Departments
     if (t.matches('[data-dept-edit]')) {
@@ -306,6 +312,12 @@ export function afterSettingsMount() {
       await fetch(`/api/departments/${id}/restore`, { method: 'POST' });
       await loadDepartments();
     }
+    if (t.matches('[data-dept-delete]')) {
+      const id = t.getAttribute('data-dept-delete');
+      if (!confirm('Permanently delete this department? This cannot be undone.')) return;
+      await fetch(`/api/departments/${id}/delete`, { method: 'POST' });
+      await loadDepartments();
+    }
 
     // Years
     if (t.matches('[data-year-edit]')) {
@@ -321,6 +333,12 @@ export function afterSettingsMount() {
     if (t.matches('[data-year-restore]')) {
       const id = t.getAttribute('data-year-restore');
       await fetch(`/api/academic-years/${id}/restore`, { method: 'POST' });
+      await loadYears();
+    }
+    if (t.matches('[data-year-delete]')) {
+      const id = t.getAttribute('data-year-delete');
+      if (!confirm('Permanently delete this academic year? This cannot be undone.')) return;
+      await fetch(`/api/academic-years/${id}/delete`, { method: 'POST' });
       await loadYears();
     }
   });
