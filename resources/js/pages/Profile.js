@@ -11,6 +11,7 @@ export function renderProfile() {
             <div>
               <input type="file" name="profile_photo" id="profile-photo-input" accept="image/*" />
               <div class="hint" style="font-size:12px;color:#666;margin-top:6px;">Max 2MB. JPG/PNG/GIF</div>
+              ${u.profile_photo ? '<div style="margin-top:8px"><button type="button" id="remove-photo" class="btn btn-outline">Remove photo</button></div>' : ''}
             </div>
           </div>
           <label style="display:block; font-weight:600; margin:8px 0 4px;">Name</label>
@@ -107,6 +108,26 @@ export function afterProfileMount() {
       const reader = new FileReader();
       reader.onload = function(ev) { const img = document.getElementById('profile-preview'); if (img) img.src = ev.target.result; };
       reader.readAsDataURL(f);
+    });
+  }
+
+  // remove photo handler
+  const removeBtn = document.getElementById('remove-photo');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', async () => {
+      if (!confirm('Remove your profile photo?')) return;
+      try {
+        const res = await fetch('/profile/photo/delete', { method: 'POST', headers: { 'X-CSRF-TOKEN': window.__CSRF__ || '' } });
+        if (!res.ok) throw new Error('Failed to remove photo');
+        const j = await res.json();
+        window.__USER__ = j.user;
+        const img = document.getElementById('profile-preview');
+        if (img) img.src = '/images/fsuu-logo.svg';
+        // remove the button
+        removeBtn.remove();
+      } catch (ex) {
+        alert(ex.message || 'Could not remove photo');
+      }
     });
   }
 }

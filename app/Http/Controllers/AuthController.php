@@ -112,4 +112,21 @@ class AuthController extends Controller
     $fresh = \App\Models\User::find($user->id);
     return response()->json(['ok' => true, 'user' => $fresh]);
     }
+
+    /**
+     * Delete the authenticated user's profile photo.
+     */
+    public function deleteProfilePhoto(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+            Storage::disk('public')->delete($user->profile_photo);
+        }
+        $user->profile_photo = null;
+        $user->save();
+        return response()->json(['ok' => true, 'user' => $user]);
+    }
 }
