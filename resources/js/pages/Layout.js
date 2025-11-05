@@ -1,5 +1,7 @@
 // Simple layout renderer for authenticated pages
 export function renderLayout({ content, currentPath, user }) {
+  // allow overriding the logo via a runtime global (settable from Blade or browser)
+  const logoSrc = (typeof window !== 'undefined' && window.__FSUU_LOGO_URL) ? window.__FSUU_LOGO_URL : '/images/fsuu-logo.png';
   const nav = [
     { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { href: '/faculty', label: 'Faculty', icon: '👨‍🏫' },
@@ -28,7 +30,7 @@ export function renderLayout({ content, currentPath, user }) {
       <aside class="app-sidebar">
         <div class="sidebar">
           <div class="logo" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-            <img src="/images/fsuu-logo.png" alt="FSUU" width="48" height="48" onerror="this.onerror=null;this.src='/images/fsuu-logo.svg'" style="border-radius:6px; object-fit:cover; background:#fff;" />
+            <img src="${logoSrc}" alt="FSUU" width="48" height="48" onerror="this.onerror=null;this.src='/images/fsuu-logo.svg'" style="border-radius:6px; object-fit:cover; background:#fff;" />
             <div class="brand">FSUU - SFPMS</div>
           </div>
           ${navLinks}

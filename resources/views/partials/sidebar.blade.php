@@ -3,6 +3,10 @@
         <img src="/images/fsuu-logo.png" alt="FSUU" width="48" height="48" onerror="this.onerror=null;this.src='/images/fsuu-logo.svg'" style="border-radius:6px; object-fit:cover; background:#fff;" />
         <div class="brand">SFPMS</div>
     </div>
+    {{-- expose optional runtime logo URL from .env: FSUU_LOGO_URL --}}
+    <script>
+        window.__FSUU_LOGO_URL = {!! json_encode(env('FSUU_LOGO_URL') ?: '') !!};
+    </script>
     <nav>
         <a class="nav-link {{ ($page ?? '')==='dashboard'?'active':'' }}" href="{{ route('dashboard') }}">Dashboard</a>
         <a class="nav-link {{ ($page ?? '')==='faculty'?'active':'' }}" href="{{ route('faculty.index') }}">Faculty</a>
