@@ -52,20 +52,19 @@ export function afterProfileMount() {
     e.preventDefault();
     err.hidden = true; ok.hidden = true; err.textContent = '';
   const fd = new FormData(form);
-  // if password fields empty, remove them from form data
-  if (!fd.get('password')) { fd.delete('password'); fd.delete('password_confirmation'); }
-    // Client-side handling for optional password change
-    const pwd = (payload.password || '').trim();
-    const pwd2 = (payload.password_confirmation || '').trim();
-    if (!pwd && !pwd2) {
-      delete payload.password;
-      delete payload.password_confirmation;
-    } else {
-      if (!pwd) { err.textContent = 'Please enter a new password or leave both fields empty.'; err.hidden = false; return; }
-      if (!pwd2) { err.textContent = 'Please confirm your new password.'; err.hidden = false; return; }
-      if (pwd !== pwd2) { err.textContent = 'Passwords do not match.'; err.hidden = false; return; }
-      if (pwd.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.hidden = false; return; }
-    }
+  // Client-side handling for optional password change using FormData values
+  const pwd = (fd.get('password') || '').trim();
+  const pwd2 = (fd.get('password_confirmation') || '').trim();
+  if (!pwd && !pwd2) {
+    // if both empty, remove password fields so backend won't validate them
+    fd.delete('password');
+    fd.delete('password_confirmation');
+  } else {
+    if (!pwd) { err.textContent = 'Please enter a new password or leave both fields empty.'; err.hidden = false; return; }
+    if (!pwd2) { err.textContent = 'Please confirm your new password.'; err.hidden = false; return; }
+    if (pwd !== pwd2) { err.textContent = 'Passwords do not match.'; err.hidden = false; return; }
+    if (pwd.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.hidden = false; return; }
+  }
     try {
       const res = await fetch('/profile', {
         method: 'POST',
