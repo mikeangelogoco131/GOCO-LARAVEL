@@ -2,6 +2,7 @@
 export function renderLayout({ content, currentPath, user }) {
   // allow overriding the logo via a runtime global (settable from Blade or browser)
   const logoSrc = (typeof window !== 'undefined' && window.__FSUU_LOGO_URL) ? window.__FSUU_LOGO_URL : '/images/fsuu-logo.png';
+  const avatarSrc = (typeof window !== 'undefined' && window.__USER__ && window.__USER__.profile_photo) ? ('/storage/' + window.__USER__.profile_photo) : '/images/fsuu-logo.svg';
   const nav = [
     { href: '/dashboard', label: 'Dashboard', icon: '🏠' },
     { href: '/faculty', label: 'Faculty', icon: '👨‍🏫' },
@@ -21,6 +22,9 @@ export function renderLayout({ content, currentPath, user }) {
   const headerActions = `
     <div style="margin-left:auto; display:flex; align-items:center; gap:10px;">
       ${currentPath === '/dashboard' ? '<a href="/contact-manager" data-nav class="btn btn-outline">✉️ Contact Manager</a>' : ''}
+      <a href="/profile" data-nav style="display:flex;align-items:center;gap:8px;text-decoration:none">
+        <img src="${avatarSrc}" alt="avatar" style="width:36px;height:36px;border-radius:999px;object-fit:cover;border:1px solid rgba(0,0,0,.06)" />
+      </a>
       <button class="btn btn-outline" id="btn-logout" type="button">Logout</button>
     </div>
   `;
