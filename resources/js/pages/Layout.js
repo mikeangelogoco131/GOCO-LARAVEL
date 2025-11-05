@@ -28,7 +28,7 @@ export function renderLayout({ content, currentPath, user }) {
       <aside class="app-sidebar">
         <div class="sidebar">
           <div class="logo" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
-            <img src="/images/fsuu-logo.png" alt="FSUU" width="36" height="36" style="border-radius:6px; object-fit:cover; background:#fff;" />
+            <img src="/images/fsuu-logo.png" alt="FSUU" width="48" height="48" onerror="this.onerror=null;this.src='/images/fsuu-logo.svg'" style="border-radius:6px; object-fit:cover; background:#fff;" />
             <div class="brand">FSUU - SFPMS</div>
           </div>
           ${navLinks}
