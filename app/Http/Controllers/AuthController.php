@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AuthController extends Controller
 {
@@ -87,7 +88,8 @@ class AuthController extends Controller
         $data = $request->validate([
             'name' => ['sometimes','required','string','max:100'],
             'email' => ['sometimes','required','email', 'unique:users,email,'.$user->id],
-            'password' => ['sometimes','nullable','confirmed','min:6']
+            'password' => ['sometimes','nullable','confirmed','min:6'],
+            'profile_photo' => ['sometimes','nullable','image','max:2048']
         ]);
         if (array_key_exists('password', $data)) {
             if ($data['password']) {
@@ -95,6 +97,16 @@ class AuthController extends Controller
             } else {
                 unset($data['password']);
             }
+        }
+        // handle profile photo upload
+        if ($request->hasFile('profile_photo')) {
+            $file = $request->file('profile_photo');
+            $path = $file->store('profile_photos', 'public');
+            // delete previous photo if exists
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $data['profile_photo'] = $path;
         }
     \App\Models\User::where('id', $user->id)->update($data);
     $fresh = \App\Models\User::find($user->id);

@@ -5,6 +5,14 @@ export function renderProfile() {
       <h1 class="page-title">My Profile</h1>
       <div class="card" style="max-width:560px;">
         <form id="profile-form">
+          <label style="display:block; font-weight:600; margin:8px 0 4px;">Profile photo</label>
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:8px;">
+            <img id="profile-preview" src="${u.profile_photo ? ('/storage/' + u.profile_photo) : '/images/fsuu-logo.svg'}" alt="avatar" style="width:84px;height:84px;border-radius:8px;object-fit:cover;border:1px solid rgba(0,0,0,.06)" />
+            <div>
+              <input type="file" name="profile_photo" id="profile-photo-input" accept="image/*" />
+              <div class="hint" style="font-size:12px;color:#666;margin-top:6px;">Max 2MB. JPG/PNG/GIF</div>
+            </div>
+          </div>
           <label style="display:block; font-weight:600; margin:8px 0 4px;">Name</label>
           <input class="input" name="name" value="${u.name ?? ''}" placeholder="Your name" required />
 
@@ -42,8 +50,9 @@ export function afterProfileMount() {
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     err.hidden = true; ok.hidden = true; err.textContent = '';
-    const fd = new FormData(form);
-    const payload = Object.fromEntries(fd.entries());
+  const fd = new FormData(form);
+  // if password fields empty, remove them from form data
+  if (!fd.get('password')) { fd.delete('password'); fd.delete('password_confirmation'); }
     // Client-side handling for optional password change
     const pwd = (payload.password || '').trim();
     const pwd2 = (payload.password_confirmation || '').trim();
@@ -59,8 +68,8 @@ export function afterProfileMount() {
     try {
       const res = await fetch('/profile', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-CSRF-TOKEN': window.__CSRF__ || '' },
-        body: JSON.stringify(payload)
+        headers: { 'X-CSRF-TOKEN': window.__CSRF__ || '' },
+        body: fd
       });
       if (!res.ok) {
         const j = await res.json().catch(()=>({}));
@@ -78,9 +87,26 @@ export function afterProfileMount() {
       }
       const json = await res.json();
       window.__USER__ = json.user;
+      // update preview src if new photo uploaded
+      if (json.user && json.user.profile_photo) {
+        const img = document.getElementById('profile-preview');
+        if (img) img.src = '/storage/' + json.user.profile_photo;
+      }
       ok.hidden = false;
     } catch (ex) {
       err.textContent = ex.message; err.hidden = false;
     }
   });
+
+  // preview selected image
+  const photoInput = document.getElementById('profile-photo-input');
+  if (photoInput) {
+    photoInput.addEventListener('change', (e) => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = function(ev) { const img = document.getElementById('profile-preview'); if (img) img.src = ev.target.result; };
+      reader.readAsDataURL(f);
+    });
+  }
 }
