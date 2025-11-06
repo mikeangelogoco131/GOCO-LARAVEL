@@ -129,4 +129,30 @@ class AuthController extends Controller
         $user->save();
         return response()->json(['ok' => true, 'user' => $user]);
     }
+
+    /**
+     * Upload or replace the authenticated user's profile photo only.
+     */
+    public function uploadProfilePhoto(Request $request)
+    {
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+        $data = $request->validate([
+            'profile_photo' => ['required','image','max:2048']
+        ]);
+        if ($request->hasFile('profile_photo')) {
+            $file = $request->file('profile_photo');
+            $path = $file->store('profile_photos', 'public');
+            // delete previous photo if exists
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $user->profile_photo = $path;
+            $user->save();
+            return response()->json(['ok' => true, 'user' => $user]);
+        }
+        return response()->json(['ok' => false, 'message' => 'No file uploaded'], 422);
+    }
 }

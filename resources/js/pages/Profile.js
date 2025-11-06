@@ -66,11 +66,29 @@ export function afterProfileMount() {
     if (pwd.length < 6) { err.textContent = 'Password must be at least 6 characters.'; err.hidden = false; return; }
   }
     try {
-      const res = await fetch('/profile', {
-        method: 'POST',
-        headers: { 'X-CSRF-TOKEN': window.__CSRF__ || '' },
-        body: fd
-      });
+      // Determine whether only the profile photo is being changed. If so, call the dedicated upload endpoint
+      const nameChanged = (fd.get('name') || '').trim() !== (u.name || '').trim();
+      const emailChanged = (fd.get('email') || '').trim() !== (u.email || '').trim();
+      const hasPassword = fd.get('password') && String(fd.get('password')).trim().length > 0;
+      const photoField = fd.get('profile_photo');
+      const hasPhoto = photoField && (photoField instanceof File ? photoField.size > 0 : true);
+
+      let res;
+      if (hasPhoto && !nameChanged && !emailChanged && !hasPassword) {
+        // Upload only the photo
+        res = await fetch('/profile/photo', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': window.__CSRF__ || '' },
+          body: fd
+        });
+      } else {
+        // Regular profile update (may include photo and other fields)
+        res = await fetch('/profile', {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': window.__CSRF__ || '' },
+          body: fd
+        });
+      }
       if (!res.ok) {
         const j = await res.json().catch(()=>({}));
         let msg = 'Update failed';

@@ -54,6 +54,7 @@ Route::get('/reports', function () { return view('welcome'); })->name('reports')
 Route::get('/settings', function () { return view('welcome'); })->name('settings');
 Route::get('/profile', function () { return view('welcome'); })->name('profile');
 Route::post('/profile/photo/delete', [App\Http\Controllers\AuthController::class, 'deleteProfilePhoto'])->name('profile.photo.delete');
+Route::post('/profile/photo', [App\Http\Controllers\AuthController::class, 'uploadProfilePhoto'])->name('profile.photo.upload');
 Route::get('/contact-manager', function () { return view('welcome'); })->name('contact.manager');
 
 // Simple contact endpoint (public)
