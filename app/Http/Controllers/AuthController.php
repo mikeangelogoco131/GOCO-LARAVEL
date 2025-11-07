@@ -108,9 +108,15 @@ class AuthController extends Controller
             }
             $data['profile_photo'] = $path;
         }
-    \App\Models\User::where('id', $user->id)->update($data);
-    $fresh = \App\Models\User::find($user->id);
-    return response()->json(['ok' => true, 'user' => $fresh]);
+        try {
+            \App\Models\User::where('id', $user->id)->update($data);
+            $fresh = \App\Models\User::find($user->id);
+            return response()->json(['ok' => true, 'user' => $fresh]);
+        } catch (\Throwable $e) {
+            // log and return structured JSON error instead of letting a fatal exception bubble up
+            \Log::error('Failed to update profile', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            return response()->json(['ok' => false, 'message' => 'Failed to update profile. Database may be unavailable.'], 500);
+        }
     }
 
     /**
@@ -122,12 +128,17 @@ class AuthController extends Controller
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-        if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
-            Storage::disk('public')->delete($user->profile_photo);
+        try {
+            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                Storage::disk('public')->delete($user->profile_photo);
+            }
+            $user->profile_photo = null;
+            $user->save();
+            return response()->json(['ok' => true, 'user' => $user]);
+        } catch (\Throwable $e) {
+            \Log::error('Failed to delete profile photo', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            return response()->json(['ok' => false, 'message' => 'Failed to remove photo. Database may be unavailable.'], 500);
         }
-        $user->profile_photo = null;
-        $user->save();
-        return response()->json(['ok' => true, 'user' => $user]);
     }
 
     /**
@@ -143,15 +154,20 @@ class AuthController extends Controller
             'profile_photo' => ['required','image','max:2048']
         ]);
         if ($request->hasFile('profile_photo')) {
-            $file = $request->file('profile_photo');
-            $path = $file->store('profile_photos', 'public');
-            // delete previous photo if exists
-            if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
-                Storage::disk('public')->delete($user->profile_photo);
+            try {
+                $file = $request->file('profile_photo');
+                $path = $file->store('profile_photos', 'public');
+                // delete previous photo if exists
+                if ($user->profile_photo && Storage::disk('public')->exists($user->profile_photo)) {
+                    Storage::disk('public')->delete($user->profile_photo);
+                }
+                $user->profile_photo = $path;
+                $user->save();
+                return response()->json(['ok' => true, 'user' => $user]);
+            } catch (\Throwable $e) {
+                \Log::error('Failed to upload profile photo', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+                return response()->json(['ok' => false, 'message' => 'Failed to upload photo. Database may be unavailable.'], 500);
             }
-            $user->profile_photo = $path;
-            $user->save();
-            return response()->json(['ok' => true, 'user' => $user]);
         }
         return response()->json(['ok' => false, 'message' => 'No file uploaded'], 422);
     }
