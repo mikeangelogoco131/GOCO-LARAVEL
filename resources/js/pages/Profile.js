@@ -52,6 +52,18 @@ export function afterProfileMount() {
     e.preventDefault();
     err.hidden = true; ok.hidden = true; err.textContent = '';
   const fd = new FormData(form);
+  // Determine if this submit is "photo-only" (user selected a file and didn't change name/email)
+  const nameChanged = (fd.get('name') || '').trim() !== (u.name || '').trim();
+  const emailChanged = (fd.get('email') || '').trim() !== (u.email || '').trim();
+  const photoField = fd.get('profile_photo');
+  const hasPhoto = photoField && (photoField instanceof File ? photoField.size > 0 : true);
+
+  // If this is a photo-only submit, ignore any accidental password autofill and remove password fields
+  if (hasPhoto && !nameChanged && !emailChanged) {
+    fd.delete('password');
+    fd.delete('password_confirmation');
+  }
+
   // Client-side handling for optional password change using FormData values
   const pwd = (fd.get('password') || '').trim();
   const pwd2 = (fd.get('password_confirmation') || '').trim();
@@ -67,14 +79,11 @@ export function afterProfileMount() {
   }
     try {
       // Determine whether only the profile photo is being changed. If so, call the dedicated upload endpoint
-      const nameChanged = (fd.get('name') || '').trim() !== (u.name || '').trim();
-      const emailChanged = (fd.get('email') || '').trim() !== (u.email || '').trim();
-      const hasPassword = fd.get('password') && String(fd.get('password')).trim().length > 0;
-      const photoField = fd.get('profile_photo');
-      const hasPhoto = photoField && (photoField instanceof File ? photoField.size > 0 : true);
+  // (nameChanged, emailChanged, hasPhoto were computed above and may have had password fields removed)
+  const hasPassword = fd.get('password') && String(fd.get('password')).trim().length > 0;
 
       let res;
-      if (hasPhoto && !nameChanged && !emailChanged && !hasPassword) {
+  if (hasPhoto && !nameChanged && !emailChanged && !hasPassword) {
         // Upload only the photo
         res = await fetch('/profile/photo', {
           method: 'POST',
