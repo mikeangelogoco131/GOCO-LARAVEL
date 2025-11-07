@@ -55,6 +55,17 @@ Route::get('/settings', function () { return view('welcome'); })->name('settings
 Route::get('/profile', function () { return view('welcome'); })->name('profile');
 Route::post('/profile/photo/delete', [App\Http\Controllers\AuthController::class, 'deleteProfilePhoto'])->name('profile.photo.delete');
 Route::post('/profile/photo', [App\Http\Controllers\AuthController::class, 'uploadProfilePhoto'])->name('profile.photo.upload');
+// Return current authenticated user's JSON (including a public URL for profile photo)
+Route::get('/profile/json', function () {
+	if (!auth()->check()) {
+		return response()->json(null, 401);
+	}
+	$user = auth()->user();
+	$photoUrl = $user->profile_photo ? asset('storage/' . $user->profile_photo) : asset('images/fsuu-logo.svg');
+	$data = $user->toArray();
+	$data['profile_photo_url'] = $photoUrl;
+	return response()->json($data);
+})->name('profile.json');
 Route::get('/contact-manager', function () { return view('welcome'); })->name('contact.manager');
 
 // Simple contact endpoint (public)
