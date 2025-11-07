@@ -60,6 +60,7 @@ Route::get('/profile/json', function () {
 	if (!auth()->check()) {
 		return response()->json(null, 401);
 	}
+	/** @var \App\Models\User $user */
 	$user = auth()->user();
 	$photoUrl = $user->profile_photo ? asset('storage/' . $user->profile_photo) : asset('images/fsuu-logo.svg');
 	$data = $user->toArray();

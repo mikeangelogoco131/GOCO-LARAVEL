@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -81,6 +82,7 @@ class AuthController extends Controller
 
     public function updateProfile(Request $request)
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
@@ -114,7 +116,7 @@ class AuthController extends Controller
             return response()->json(['ok' => true, 'user' => $fresh]);
         } catch (\Throwable $e) {
             // log and return structured JSON error instead of letting a fatal exception bubble up
-            \Log::error('Failed to update profile', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            Log::error('Failed to update profile', ['user_id' => $user->id, 'error' => $e->getMessage()]);
             return response()->json(['ok' => false, 'message' => 'Failed to update profile. Database may be unavailable.'], 500);
         }
     }
@@ -124,6 +126,7 @@ class AuthController extends Controller
      */
     public function deleteProfilePhoto(Request $request)
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
@@ -136,7 +139,7 @@ class AuthController extends Controller
             $user->save();
             return response()->json(['ok' => true, 'user' => $user]);
         } catch (\Throwable $e) {
-            \Log::error('Failed to delete profile photo', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+            Log::error('Failed to delete profile photo', ['user_id' => $user->id, 'error' => $e->getMessage()]);
             return response()->json(['ok' => false, 'message' => 'Failed to remove photo. Database may be unavailable.'], 500);
         }
     }
@@ -146,6 +149,7 @@ class AuthController extends Controller
      */
     public function uploadProfilePhoto(Request $request)
     {
+        /** @var \App\Models\User|null $user */
         $user = Auth::user();
         if (!$user) {
             return response()->json(['message' => 'Unauthorized'], 401);
@@ -165,7 +169,7 @@ class AuthController extends Controller
                 $user->save();
                 return response()->json(['ok' => true, 'user' => $user]);
             } catch (\Throwable $e) {
-                \Log::error('Failed to upload profile photo', ['user_id' => $user->id, 'error' => $e->getMessage()]);
+                Log::error('Failed to upload profile photo', ['user_id' => $user->id, 'error' => $e->getMessage()]);
                 return response()->json(['ok' => false, 'message' => 'Failed to upload photo. Database may be unavailable.'], 500);
             }
         }
